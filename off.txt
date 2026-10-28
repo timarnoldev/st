@@ -1,5 +1,5 @@
 # Bioreaktor-Labor: Fernzugriff wieder abschalten
-#   irm https://st.tim-arnold.de/off.ps1 | iex
+#   irm https://st.tim-arnold.de/off.txt | iex
 
 $TsExe = 'C:\Program Files\Tailscale\tailscale.exe'
 $PubKey = 'claude-bioreaktor-lab'

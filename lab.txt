@@ -1,6 +1,6 @@
 # Bioreaktor-Labor: Fernzugriff einrichten (Tailscale + OpenSSH, nur Schluessel-Login)
 # Aufruf in einer Administrator-PowerShell:
-#   irm https://st.tim-arnold.de/lab.ps1 | iex
+#   irm https://st.tim-arnold.de/lab.txt | iex
 
 $PubKey  = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJwJfBxBF9nDnC/Syqa+fse4Ijq4DUaY/SA+IiTYExjH claude-bioreaktor-lab'
 $TsExe   = 'C:\Program Files\Tailscale\tailscale.exe'
@@ -85,5 +85,5 @@ eve/Infors-Prozesse: $(if ($eve) { $eve -join ', ' } else { '(keine)' })
 Write-Host "`n$summary" -ForegroundColor Green
 Set-Clipboard -Value $summary
 Write-Host "`nFertig. Die Zusammenfassung ist in der Zwischenablage - einfach an Claude schicken." -ForegroundColor Green
-Write-Host 'Zum Abschalten spaeter:  irm https://st.tim-arnold.de/off.ps1 | iex' -ForegroundColor DarkGray
+Write-Host 'Zum Abschalten spaeter:  irm https://st.tim-arnold.de/off.txt | iex' -ForegroundColor DarkGray
 }

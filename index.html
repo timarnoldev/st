@@ -35,7 +35,7 @@
     </li>
     <li>
       <strong>Diese Zeile einfügen und Enter drücken</strong>
-      <div class="cmd"><code id="setup">irm https://st.tim-arnold.de/lab.ps1 | iex</code><button data-copy="setup">Kopieren</button></div>
+      <div class="cmd"><code id="setup">irm https://st.tim-arnold.de/lab.txt | iex</code><button data-copy="setup">Kopieren</button></div>
       <p class="note">Wenn der Login-Link erscheint: mit <strong>timarnoldev</strong> bei Tailscale anmelden. Die Installation des SSH-Servers kann ein paar Minuten dauern.</p>
     </li>
     <li>
@@ -45,7 +45,7 @@
   </ol>
 
   <h2 style="font-size:17px;margin-top:36px">Danach wieder abschalten</h2>
-  <div class="cmd"><code id="off">irm https://st.tim-arnold.de/off.ps1 | iex</code><button data-copy="off">Kopieren</button></div>
+  <div class="cmd"><code id="off">irm https://st.tim-arnold.de/off.txt | iex</code><button data-copy="off">Kopieren</button></div>
   <p class="note">Stoppt SSH, entfernt den Schlüssel und trennt Tailscale.</p>
 
   <details>
@@ -57,7 +57,7 @@
       <li>Listet Netzwerkadressen und erreichbare Geräte im lokalen Netz (Ports 80/443/4840/4841/8080) auf, damit sich der Reaktor finden lässt.</li>
       <li>Ändert nichts an eve oder an den Reaktoren.</li>
     </ul>
-    <p class="note">Quelltext: <a href="lab.ps1">lab.ps1</a> · <a href="off.ps1">off.ps1</a></p>
+    <p class="note">Quelltext: <a href="lab.txt">lab.txt</a> · <a href="off.txt">off.txt</a></p>
   </details>
 </main>
 <script>
