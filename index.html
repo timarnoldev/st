@@ -3,64 +3,91 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bioreaktor-Labor · Setup</title>
+<title>st · Fernzugriff einrichten</title>
 <style>
   :root { color-scheme: light dark; --bg: #f9f9f7; --card: #fcfcfb; --fg: #0b0b0b; --muted: #52514e; --border: rgba(11,11,11,.12); --code: #f0efec; --accent: #2a78d6; }
   @media (prefers-color-scheme: dark) { :root { --bg: #0d0d0d; --card: #1a1a19; --fg: #f0efec; --muted: #c3c2b7; --border: rgba(255,255,255,.12); --code: #262624; --accent: #3987e5; } }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
   h1 { font-size: 22px; margin: 0 0 4px; }
-  .sub { color: var(--muted); margin: 0 0 28px; }
-  ol { padding-left: 22px; }
-  li { margin: 0 0 22px; }
+  h2 { font-size: 17px; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .tabs button { font: inherit; color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--fg); font-weight: 600; border-color: var(--muted); }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+  .panel[hidden] { display: none; }
+  ol { padding-left: 22px; margin: 0; }
+  li { margin: 0 0 16px; }
+  li:last-child { margin: 0; }
   .cmd { display: flex; align-items: stretch; margin-top: 8px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--code); }
-  .cmd code { flex: 1; padding: 12px 14px; font: 15px/1.4 ui-monospace, Consolas, monospace; overflow-x: auto; white-space: nowrap; }
+  .cmd code { flex: 1; padding: 11px 14px; font: 14.5px/1.4 ui-monospace, Consolas, monospace; overflow-x: auto; white-space: nowrap; }
   .cmd button { border: 0; border-left: 1px solid var(--border); background: var(--card); color: var(--fg); font: inherit; font-size: 14px; padding: 0 16px; cursor: pointer; min-width: 96px; }
   .cmd button:hover { color: var(--accent); }
   .note { color: var(--muted); font-size: 14px; }
-  details { margin-top: 36px; border-top: 1px solid var(--border); padding-top: 16px; }
+  section { margin-top: 32px; }
+  details { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 16px; }
   summary { cursor: pointer; color: var(--muted); }
   a { color: var(--accent); }
 </style>
 </head>
 <body>
 <main>
-  <h1>Bioreaktor-Labor · Fernzugriff</h1>
-  <p class="sub">Richtet Tailscale und einen SSH-Zugang (nur per Schlüssel) auf dem Laborrechner ein.</p>
+  <h1>Fernzugriff einrichten</h1>
+  <p class="sub">Bringt einen Rechner in mein Tailnet und gibt SSH per Schlüssel frei. Freigabe per QR-Code vom Handy, ohne Login am Gerät.</p>
 
-  <ol>
-    <li>
-      <strong>PowerShell als Administrator öffnen</strong><br>
-      <span class="note">Windows-Taste → „PowerShell“ tippen → Rechtsklick → <em>Als Administrator ausführen</em></span>
-    </li>
-    <li>
-      <strong>Diese Zeile einfügen und Enter drücken</strong>
-      <div class="cmd"><code id="setup">irm https://st.tim-arnold.de/lab.txt | iex</code><button data-copy="setup">Kopieren</button></div>
-      <p class="note">Wenn der Login-Link erscheint: mit <strong>timarnoldev</strong> bei Tailscale anmelden. Die Installation des SSH-Servers kann ein paar Minuten dauern.</p>
-    </li>
-    <li>
-      <strong>Ergebnis schicken</strong><br>
-      <span class="note">Am Ende liegt eine Zusammenfassung (Benutzer, Tailscale-IP, gefundene Geräte) in der Zwischenablage, die einfach an Claude schicken.</span>
-    </li>
-  </ol>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="win">Windows</button>
+    <button role="tab" data-tab="unix">Linux / macOS</button>
+  </div>
 
-  <h2 style="font-size:17px;margin-top:36px">Danach wieder abschalten</h2>
-  <div class="cmd"><code id="off">irm https://st.tim-arnold.de/off.txt | iex</code><button data-copy="off">Kopieren</button></div>
-  <p class="note">Stoppt SSH, entfernt den Schlüssel und trennt Tailscale.</p>
+  <div class="panel" id="win" role="tabpanel">
+    <ol>
+      <li><strong>PowerShell als Administrator öffnen</strong><br>
+        <span class="note">Windows-Taste → „PowerShell“ → Rechtsklick → <em>Als Administrator ausführen</em></span></li>
+      <li><strong>Einfügen und Enter</strong>
+        <div class="cmd"><code id="c-win">irm https://st.tim-arnold.de/win.txt | iex</code><button data-copy="c-win">Kopieren</button></div></li>
+      <li><strong>QR-Code mit dem Handy scannen und bestätigen</strong><br>
+        <span class="note">Am Ende liegt die Zusammenfassung (IP, Benutzer, SSH-Befehl) in der Zwischenablage.</span></li>
+    </ol>
+  </div>
+
+  <div class="panel" id="unix" role="tabpanel" hidden>
+    <ol>
+      <li><strong>Im Terminal einfügen und Enter</strong>
+        <div class="cmd"><code id="c-unix">curl -fsSL https://st.tim-arnold.de/sh | sudo sh</code><button data-copy="c-unix">Kopieren</button></div>
+        <p class="note">Debian/Ubuntu, Fedora/RHEL, Arch, openSUSE, Alpine. macOS: vorher die <a href="https://tailscale.com/download/mac">Tailscale-App</a> installieren.</p></li>
+      <li><strong>QR-Code mit dem Handy scannen und bestätigen</strong><br>
+        <span class="note">Am Ende werden IP, Benutzer und SSH-Befehl angezeigt.</span></li>
+    </ol>
+  </div>
+
+  <section>
+    <h2>Wieder abschalten</h2>
+    <div class="cmd"><code id="o-win">irm https://st.tim-arnold.de/win-off.txt | iex</code><button data-copy="o-win">Kopieren</button></div>
+    <div class="cmd"><code id="o-unix">curl -fsSL https://st.tim-arnold.de/off.sh | sudo sh</code><button data-copy="o-unix">Kopieren</button></div>
+    <p class="note">Entfernt den Schlüssel und meldet das Gerät von Tailscale ab.</p>
+  </section>
 
   <details>
-    <summary>Was macht das Skript genau?</summary>
+    <summary>Was passiert genau?</summary>
     <ul class="note">
-      <li>Installiert Tailscale (offizielles MSI von pkgs.tailscale.com), falls noch nicht vorhanden, und meldet den Rechner als <code>bioreaktor-lab</code> an.</li>
-      <li>Aktiviert den Windows-eigenen OpenSSH-Server (Starttyp „Manuell“, startet also nach einem Neustart nicht von selbst).</li>
-      <li>Trägt genau einen öffentlichen SSH-Schlüssel ein. Ein Passwort-Login wird nicht freigegeben.</li>
-      <li>Listet Netzwerkadressen und erreichbare Geräte im lokalen Netz (Ports 80/443/4840/4841/8080) auf, damit sich der Reaktor finden lässt.</li>
-      <li>Ändert nichts an eve oder an den Reaktoren.</li>
+      <li>Installiert Tailscale aus offizieller Quelle (MSI von pkgs.tailscale.com bzw. tailscale.com/install.sh), falls nicht vorhanden.</li>
+      <li><code>tailscale up --qr</code> zeigt den Login-Link als QR-Code. Wer ihn mit einem eingeloggten Gerät öffnet, nimmt den Rechner ins Tailnet auf. Es steckt kein Auth-Key im Skript.</li>
+      <li>Installiert und startet den OpenSSH-Server, erlaubt Port 22 in der Firewall (Linux: nur auf <code>tailscale0</code>).</li>
+      <li>Trägt genau einen öffentlichen Schlüssel (<code>claude-st</code>) ein. Passwort-Einstellungen bleiben unverändert.</li>
     </ul>
-    <p class="note">Quelltext: <a href="lab.txt">lab.txt</a> · <a href="off.txt">off.txt</a></p>
+    <p class="note">Quelltext: <a href="win.txt">win.txt</a> · <a href="sh">sh</a> · <a href="win-off.txt">win-off.txt</a> · <a href="off.sh">off.sh</a> · <a href="https://github.com/timarnoldev/st">GitHub</a></p>
   </details>
 </main>
 <script>
+  const tabs = document.querySelectorAll("[data-tab]");
+  function show(id) {
+    tabs.forEach(t => t.setAttribute("aria-selected", t.dataset.tab === id));
+    document.querySelectorAll("[role=tabpanel]").forEach(p => p.hidden = p.id !== id);
+  }
+  tabs.forEach(t => t.onclick = () => show(t.dataset.tab));
+  show(/Win/.test(navigator.userAgent) ? "win" : "unix");
   document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => {
     await navigator.clipboard.writeText(document.getElementById(b.dataset.copy).textContent);
     b.textContent = "Kopiert ✓"; setTimeout(() => b.textContent = "Kopieren", 1500);

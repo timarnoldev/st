@@ -1,0 +1,14 @@
+# Zugang wieder entfernen (Administrator-PowerShell):
+#   irm https://st.tim-arnold.de/win-off.txt | iex
+& {
+$TsExe = 'C:\Program Files\Tailscale\tailscale.exe'
+Stop-Service sshd -ErrorAction SilentlyContinue
+Set-Service sshd -StartupType Disabled -ErrorAction SilentlyContinue
+$f = 'C:\ProgramData\ssh\administrators_authorized_keys'
+if (Test-Path $f) {
+    (Get-Content $f) | Where-Object { $_ -notmatch 'claude-st$|claude-bioreaktor-lab$' } | Set-Content $f -Encoding ascii
+}
+if (Test-Path $TsExe) { & $TsExe logout }
+Write-Host 'SSH gestoppt, Schluessel entfernt, aus Tailscale abgemeldet.' -ForegroundColor Green
+Write-Host 'Tailscale komplett entfernen: Einstellungen -> Apps -> Tailscale -> Deinstallieren' -ForegroundColor DarkGray
+}

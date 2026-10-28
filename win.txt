@@ -1,0 +1,73 @@
+# Tailscale + SSH-Zugang einrichten (Windows 10/11)
+# In einer Administrator-PowerShell:
+#   irm https://st.tim-arnold.de/win.txt | iex
+# Optional anderer Geraetename:  $env:ST_NAME='mein-name'; irm https://st.tim-arnold.de/win.txt | iex
+
+& {
+$PubKey = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILdqMzo+cXjipnNPcWhjMIlbcYipa+zUAxLzHPuYlqag claude-st'
+$TsExe  = 'C:\Program Files\Tailscale\tailscale.exe'
+$Name   = if ($env:ST_NAME) { $env:ST_NAME } else { $env:COMPUTERNAME }
+$Name   = ($Name.ToLower() -replace '[^a-z0-9-]', '-')
+
+function Step($t) { Write-Host "`n==> $t" -ForegroundColor Cyan }
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole('Administrators')
+if (-not $admin) {
+    Write-Host 'Bitte PowerShell als Administrator starten (Rechtsklick -> Als Administrator ausfuehren).' -ForegroundColor Red
+    return
+}
+
+# --- Tailscale ---------------------------------------------------------------
+Step 'Tailscale'
+if (-not (Test-Path $TsExe)) {
+    $msi = Join-Path $env:TEMP 'tailscale.msi'
+    Write-Host 'Lade Tailscale herunter ...'
+    Invoke-WebRequest 'https://pkgs.tailscale.com/stable/tailscale-setup-latest-amd64.msi' -OutFile $msi -UseBasicParsing
+    Write-Host 'Installiere ...'
+    Start-Process msiexec.exe -ArgumentList "/i `"$msi`" /quiet /norestart" -Wait
+    for ($i = 0; $i -lt 30 -and -not (Test-Path $TsExe); $i++) { Start-Sleep 1 }
+}
+for ($i = 0; $i -lt 30 -and (Get-Service Tailscale -ErrorAction SilentlyContinue).Status -ne 'Running'; $i++) { Start-Sleep 1 }
+$TsIp = & $TsExe ip -4 2>$null | Select-Object -First 1
+if (-not $TsIp) {
+    Write-Host 'Gleich erscheint ein QR-Code / Link.' -ForegroundColor Yellow
+    Write-Host 'Mit dem Handy scannen (dort bei Tailscale eingeloggt) und Geraet bestaetigen.' -ForegroundColor Yellow
+    # --unattended: bleibt verbunden, auch wenn sich der Windows-Benutzer abmeldet
+    & $TsExe up --qr --unattended --hostname $Name
+    $TsIp = & $TsExe ip -4 2>$null | Select-Object -First 1
+}
+
+# --- OpenSSH-Server ----------------------------------------------------------
+Step 'OpenSSH-Server (kann ein paar Minuten dauern)'
+$cap = Get-WindowsCapability -Online -Name 'OpenSSH.Server*' | Select-Object -First 1
+if ($cap.State -ne 'Installed') { Add-WindowsCapability -Online -Name $cap.Name | Out-Null }
+Start-Service sshd -ErrorAction Stop
+Set-Service sshd -StartupType Automatic
+if (-not (Get-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -ErrorAction SilentlyContinue)) {
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' `
+        -Enabled True -Direction Inbound -Protocol TCP -LocalPort 22 -Action Allow -Profile Any | Out-Null
+}
+
+# --- Schluessel eintragen ----------------------------------------------------
+# Admin-Konten nutzen unter Windows die zentrale Datei administrators_authorized_keys
+Step 'SSH-Schluessel'
+$f = 'C:\ProgramData\ssh\administrators_authorized_keys'
+if (-not (Test-Path $f) -or -not (Select-String -Path $f -SimpleMatch $PubKey -Quiet)) {
+    Add-Content -Path $f -Value $PubKey -Encoding ascii
+}
+icacls $f /inheritance:r /grant 'Administrators:F' /grant 'SYSTEM:F' | Out-Null
+
+$user = $env:USERNAME
+$summary = @"
+--- st.tim-arnold.de ---
+Rechner:      $Name (Windows $([Environment]::OSVersion.Version))
+Benutzer:     $(whoami)
+Tailscale-IP: $TsIp
+SSH:          ssh $user@$TsIp
+"@
+Write-Host "`n$summary" -ForegroundColor Green
+Set-Clipboard -Value $summary
+Write-Host "`nFertig. Die Zusammenfassung ist in der Zwischenablage - einfach an Claude schicken." -ForegroundColor Green
+Write-Host 'Abschalten:  irm https://st.tim-arnold.de/win-off.txt | iex' -ForegroundColor DarkGray
+}
