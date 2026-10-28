@@ -1,0 +1,17 @@
+# Bioreaktor-Labor: Fernzugriff wieder abschalten
+#   irm https://st.tim-arnold.de/off.ps1 | iex
+
+$TsExe = 'C:\Program Files\Tailscale\tailscale.exe'
+$PubKey = 'claude-bioreaktor-lab'
+
+Stop-Service sshd -ErrorAction SilentlyContinue
+Set-Service sshd -StartupType Disabled -ErrorAction SilentlyContinue
+
+$f = 'C:\ProgramData\ssh\administrators_authorized_keys'
+if (Test-Path $f) {
+    (Get-Content $f) | Where-Object { $_ -notmatch $PubKey } | Set-Content $f -Encoding ascii
+}
+if (Test-Path $TsExe) { & $TsExe down }
+
+Write-Host 'SSH gestoppt, Schluessel entfernt, Tailscale getrennt.' -ForegroundColor Green
+Write-Host 'Tailscale komplett entfernen: Einstellungen -> Apps -> Tailscale -> Deinstallieren' -ForegroundColor DarkGray

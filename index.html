@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bioreaktor-Labor · Setup</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f9f9f7; --card: #fcfcfb; --fg: #0b0b0b; --muted: #52514e; --border: rgba(11,11,11,.12); --code: #f0efec; --accent: #2a78d6; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0d0d0d; --card: #1a1a19; --fg: #f0efec; --muted: #c3c2b7; --border: rgba(255,255,255,.12); --code: #262624; --accent: #3987e5; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  ol { padding-left: 22px; }
+  li { margin: 0 0 22px; }
+  .cmd { display: flex; align-items: stretch; margin-top: 8px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--code); }
+  .cmd code { flex: 1; padding: 12px 14px; font: 15px/1.4 ui-monospace, Consolas, monospace; overflow-x: auto; white-space: nowrap; }
+  .cmd button { border: 0; border-left: 1px solid var(--border); background: var(--card); color: var(--fg); font: inherit; font-size: 14px; padding: 0 16px; cursor: pointer; min-width: 96px; }
+  .cmd button:hover { color: var(--accent); }
+  .note { color: var(--muted); font-size: 14px; }
+  details { margin-top: 36px; border-top: 1px solid var(--border); padding-top: 16px; }
+  summary { cursor: pointer; color: var(--muted); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bioreaktor-Labor · Fernzugriff</h1>
+  <p class="sub">Richtet Tailscale und einen SSH-Zugang (nur per Schlüssel) auf dem Laborrechner ein.</p>
+
+  <ol>
+    <li>
+      <strong>PowerShell als Administrator öffnen</strong><br>
+      <span class="note">Windows-Taste → „PowerShell“ tippen → Rechtsklick → <em>Als Administrator ausführen</em></span>
+    </li>
+    <li>
+      <strong>Diese Zeile einfügen und Enter drücken</strong>
+      <div class="cmd"><code id="setup">irm https://st.tim-arnold.de/lab.ps1 | iex</code><button data-copy="setup">Kopieren</button></div>
+      <p class="note">Wenn der Login-Link erscheint: mit <strong>timarnoldev</strong> bei Tailscale anmelden. Die Installation des SSH-Servers kann ein paar Minuten dauern.</p>
+    </li>
+    <li>
+      <strong>Ergebnis schicken</strong><br>
+      <span class="note">Am Ende liegt eine Zusammenfassung (Benutzer, Tailscale-IP, gefundene Geräte) in der Zwischenablage, die einfach an Claude schicken.</span>
+    </li>
+  </ol>
+
+  <h2 style="font-size:17px;margin-top:36px">Danach wieder abschalten</h2>
+  <div class="cmd"><code id="off">irm https://st.tim-arnold.de/off.ps1 | iex</code><button data-copy="off">Kopieren</button></div>
+  <p class="note">Stoppt SSH, entfernt den Schlüssel und trennt Tailscale.</p>
+
+  <details>
+    <summary>Was macht das Skript genau?</summary>
+    <ul class="note">
+      <li>Installiert Tailscale (offizielles MSI von pkgs.tailscale.com), falls noch nicht vorhanden, und meldet den Rechner als <code>bioreaktor-lab</code> an.</li>
+      <li>Aktiviert den Windows-eigenen OpenSSH-Server (Starttyp „Manuell“, startet also nach einem Neustart nicht von selbst).</li>
+      <li>Trägt genau einen öffentlichen SSH-Schlüssel ein. Ein Passwort-Login wird nicht freigegeben.</li>
+      <li>Listet Netzwerkadressen und erreichbare Geräte im lokalen Netz (Ports 80/443/4840/4841/8080) auf, damit sich der Reaktor finden lässt.</li>
+      <li>Ändert nichts an eve oder an den Reaktoren.</li>
+    </ul>
+    <p class="note">Quelltext: <a href="lab.ps1">lab.ps1</a> · <a href="off.ps1">off.ps1</a></p>
+  </details>
+</main>
+<script>
+  document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => {
+    await navigator.clipboard.writeText(document.getElementById(b.dataset.copy).textContent);
+    b.textContent = "Kopiert ✓"; setTimeout(() => b.textContent = "Kopieren", 1500);
+  });
+</script>
+</body>
+</html>
